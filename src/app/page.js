@@ -24,6 +24,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState(''); // 'success' | 'error'
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const handlePhoneChange = (e) => {
     const formatted = formatPhoneNumber(e.target.value);
@@ -38,6 +39,11 @@ export default function Page() {
     e.preventDefault();
     if (!isValidPhoneNumber(phoneNumber)) {
       setStatusMessage('Please enter a valid 10-digit phone number');
+      setStatusType('error');
+      return;
+    }
+    if (!consentChecked) {
+      setStatusMessage('You must consent to receive automated text messages.');
       setStatusType('error');
       return;
     }
@@ -99,9 +105,9 @@ export default function Page() {
           <button
             type="submit"
             className={`w-full py-3 px-4 text-lg font-semibold rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 transition-colors duration-200 flex items-center justify-center ${
-              (!isPhoneValid || loading) ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700'
+              (!isPhoneValid || loading || !consentChecked) ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700'
             }`}
-            disabled={!isPhoneValid || loading}
+            disabled={!isPhoneValid || loading || !consentChecked}
           >
             {loading ? (
               <div className="flex items-center justify-center">
@@ -112,6 +118,19 @@ export default function Page() {
               'Send Contact Card'
             )}
           </button>
+          <div className="flex items-start mt-4">
+            <input
+              id="consent"
+              type="checkbox"
+              checked={consentChecked}
+              onChange={e => setConsentChecked(e.target.checked)}
+              className="mt-1 mr-2 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              required
+            />
+            <label htmlFor="consent" className="text-gray-800 text-sm leading-snug select-none">
+              I consent to receive automated text messages from Dennis Yu Builds at the phone number provided. Message and data rates may apply. Reply STOP to opt out at any time.
+            </label>
+          </div>
         </form>
         {(showSuccess || showError) && (
           <div
