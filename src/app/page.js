@@ -78,7 +78,7 @@ export default function Page() {
           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
             <span className="text-2xl">👋</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I'm Dennis!</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I&apos;m Dennis!</h1>
           <p className="text-gray-600 text-sm leading-relaxed text-center">Enter your number to get my contact info</p>
         </div>
         <form className="w-full" onSubmit={handleSubmit} autoComplete="off">
