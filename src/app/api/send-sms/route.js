@@ -12,7 +12,7 @@ const twilioClient = twilio(
 );
 
 // Fixed contact card message
-const CONTACT_MESSAGE = `Great to connect, here's my contact:
+const CONTACT_MESSAGE = `Great to connect, here&apos;s my contact:
 Dennis Yu
 +1 (562) 716-9048  <-- save this!
 misterdennisyu@gmail.com
