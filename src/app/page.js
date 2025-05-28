@@ -1,18 +1,6 @@
 'use client';
 import { useState } from 'react';
-
-const formatPhoneNumber = (value) => {
-  const cleaned = value.replace(/\D/g, '');
-  const limited = cleaned.slice(0, 10);
-  if (limited.length >= 6) {
-    return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
-  } else if (limited.length >= 3) {
-    return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
-  } else if (limited.length > 0) {
-    return `(${limited}`;
-  }
-  return '';
-};
+import { InputMask } from '@react-input/mask';
 
 const isValidPhoneNumber = (value) => {
   const cleaned = value.replace(/\D/g, '');
@@ -28,15 +16,7 @@ export default function Page() {
   const [consentChecked, setConsentChecked] = useState(false);
   const [step, setStep] = useState('form');
   const [consentTimestamp, setConsentTimestamp] = useState(null);
-
-  const handlePhoneChange = (e) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhoneNumber(formatted);
-    if (statusMessage) {
-      setStatusMessage('');
-      setStatusType('');
-    }
-  };
+  const [skipped, setSkipped] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -114,6 +94,13 @@ END:VCARD`;
     setConsentTimestamp(null);
   };
 
+  const handleSkip = () => {
+    setSkipped(true);
+    setStep('success');
+    setStatusMessage('You chose to skip sending the contact card.');
+    setStatusType('success');
+  };
+
   const isPhoneValid = isValidPhoneNumber(phoneNumber);
   const isFormValid = isPhoneValid && consentChecked && fullName.trim().length > 0;
   const showError = statusType === 'error' && statusMessage;
@@ -144,16 +131,17 @@ END:VCARD`;
                 aria-label="Full Name"
               />
               <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">What&apos;s your mobile number?</label>
-              <input
+              <InputMask
                 id="phone"
-                type="text"
+                mask="(___) ___-____"
+                replacement={{ _: /\d/ }}
+                value={phoneNumber}
+                onChange={e => setPhoneNumber(e.target.value)}
                 inputMode="tel"
                 autoComplete="tel"
                 maxLength={14}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg mb-4 text-black"
                 placeholder="(555) 123-4567"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
                 disabled={loading}
                 aria-label="Phone Number"
               />
@@ -170,8 +158,16 @@ END:VCARD`;
                     Sending...
                   </div>
                 ) : (
-                  'Send Contact Card'
+                  "Text Me Dennis's Contact"
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="w-full py-3 px-4 text-lg font-semibold rounded-lg mt-3 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center"
+                disabled={loading}
+              >
+                Skip
               </button>
               <div className="flex items-start mt-4">
                 <input
@@ -193,8 +189,10 @@ END:VCARD`;
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mb-4">
               <span className="text-2xl">😊</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Thanks, {fullName}!</h1>
-            <p className="text-gray-600 text-sm leading-relaxed text-center mb-8">Your contact card has been sent successfully.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Thanks, {fullName || 'friend'}!</h1>
+            <p className="text-gray-600 text-sm leading-relaxed text-center mb-8">
+              {skipped ? 'You chose to skip sending the contact card.' : 'Your contact card has been sent successfully.'}
+            </p>
             
             <div className="flex flex-col gap-4 w-full">
               <button
