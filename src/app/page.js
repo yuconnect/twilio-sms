@@ -129,10 +129,10 @@ END:VCARD`;
                 <span className="text-2xl">👋</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I&apos;m Dennis!</h1>
-              <p className="text-gray-600 text-sm leading-relaxed text-center">Let's exchange our contact info</p>
+              <p className="text-gray-600 text-sm leading-relaxed text-center">Let&apos;s exchange our contact info</p>
             </div>
             <form className="w-full" onSubmit={handleSubmit} autoComplete="off">
-              <label htmlFor="fullName" className="block text-gray-700 font-medium mb-2">What's your name?</label>
+              <label htmlFor="fullName" className="block text-gray-700 font-medium mb-2">What&apos;s your name?</label>
               <input
                 id="fullName"
                 type="text"
@@ -143,7 +143,7 @@ END:VCARD`;
                 disabled={loading}
                 aria-label="Full Name"
               />
-              <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">What's your mobile number?</label>
+              <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">What&apos;s your mobile number?</label>
               <input
                 id="phone"
                 type="text"
