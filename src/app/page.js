@@ -14,19 +14,14 @@ export default function Page() {
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState(''); // 'success' | 'error'
   const [consentChecked, setConsentChecked] = useState(false);
-  const [step, setStep] = useState('form');
+  const [step, setStep] = useState(1);
   const [consentTimestamp, setConsentTimestamp] = useState(null);
   const [skipped, setSkipped] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!isValidPhoneNumber(phoneNumber)) {
       setStatusMessage('Please enter a valid 10-digit phone number');
-      setStatusType('error');
-      return;
-    }
-    if (!consentChecked) {
-      setStatusMessage('You must consent to receive automated text messages.');
       setStatusType('error');
       return;
     }
@@ -51,19 +46,28 @@ export default function Page() {
       });
       if (res.ok) {
         setConsentTimestamp(new Date().toISOString());
-        setStep('success');
-        setStatusMessage('✅ Contact card sent successfully!');
+        setStatusMessage('✅ Check your messenger app for my contact!');
         setStatusType('success');
       } else {
-        setStatusMessage('❌ Failed to send contact card. Please try again.');
+        setStatusMessage('❌ Contact not sent. Ask me to share manually.');
         setStatusType('error');
       }
     } catch {
-      setStatusMessage('❌ Failed to send contact card. Please try again.');
+      setStatusMessage('❌ Contact not sent. Ask me to share manually.');
       setStatusType('error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveContact = () => {
+    handleDownloadVCard();
+    setStatusMessage('Contact saved successfully!');
+    setStatusType('success');
+  };
+
+  const handleWantContact = () => {
+    setStep(2);
   };
 
   const handleDownloadVCard = () => {
@@ -85,7 +89,7 @@ END:VCARD`;
   };
 
   const handleStartOver = () => {
-    setStep('form');
+    setStep(1);
     setFullName('');
     setPhoneNumber('');
     setConsentChecked(false);
@@ -96,20 +100,21 @@ END:VCARD`;
 
   const handleSkip = () => {
     setSkipped(true);
-    setStep('success');
+    setStep(3);
     setStatusMessage('You chose to skip sending the contact card.');
     setStatusType('success');
   };
 
   const isPhoneValid = isValidPhoneNumber(phoneNumber);
-  const isFormValid = isPhoneValid && consentChecked && fullName.trim().length > 0;
+  const isFormValid = isPhoneValid && fullName.trim().length > 0;
+  const isStep2Valid = isFormValid && consentChecked;
   const showError = statusType === 'error' && statusMessage;
   const showSuccess = statusType === 'success' && statusMessage;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        {step === 'form' ? (
+        {step === 1 ? (
           <>
             <div className="flex flex-col items-center mb-6">
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
@@ -146,43 +151,83 @@ END:VCARD`;
                 aria-label="Phone Number"
               />
               <button
-                type="submit"
+                type="button"
+                onClick={handleSaveContact}
                 className={`w-full py-3 px-4 text-lg font-semibold rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 transition-colors duration-200 flex items-center justify-center ${
                   (!isFormValid || loading) ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700'
                 }`}
                 disabled={!isFormValid || loading}
               >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Sending...
-                  </div>
-                ) : (
-                  "Text Me Dennis's Contact"
-                )}
+                Save New Contact
               </button>
               <button
                 type="button"
-                onClick={handleSkip}
+                onClick={handleWantContact}
                 className="w-full py-3 px-4 text-lg font-semibold rounded-lg mt-3 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center"
                 disabled={loading}
               >
-                Skip
+                Want my contact?
               </button>
-              <div className="flex items-start mt-4">
-                <input
-                  id="consent"
-                  type="checkbox"
-                  checked={consentChecked}
-                  onChange={e => setConsentChecked(e.target.checked)}
-                  className="mt-1 mr-2 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  required
-                />
-                <label htmlFor="consent" className="text-gray-800 text-sm leading-snug select-none">
-                  I consent to receive automated text messages from Dennis Yu Builds at the phone number provided. Message and data rates may apply. Reply STOP to opt out at any time.
-                </label>
-              </div>
             </form>
+          </>
+        ) : step === 2 ? (
+          <>
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
+                <span className="text-2xl">📱</span>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Get My Contact</h1>
+              <p className="text-gray-600 text-sm leading-relaxed text-center">I&apos;ll send my contact info to {phoneNumber}</p>
+            </div>
+            <div className="flex items-start mb-6">
+              <input
+                id="consent"
+                type="checkbox"
+                checked={consentChecked}
+                onChange={e => setConsentChecked(e.target.checked)}
+                className="mt-1 mr-2 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                required
+              />
+              <label htmlFor="consent" className="text-gray-800 text-sm leading-snug select-none">
+                I consent to receive automated text messages from Dennis Yu Builds at the phone number provided. Message and data rates may apply. Reply STOP to opt out at any time.
+              </label>
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`w-full py-3 px-4 text-lg font-semibold rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 transition-colors duration-200 flex items-center justify-center ${
+                (!isStep2Valid || loading) ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-indigo-700'
+              }`}
+              disabled={!isStep2Valid || loading}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Sending...
+                </div>
+              ) : (
+                "Text Me Dennis's Contact"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleStartOver}
+              className="w-full py-3 px-4 text-lg font-semibold rounded-lg mt-3 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center"
+              disabled={loading}
+            >
+              Start Over
+            </button>
+            {(showSuccess || showError) && (
+              <div
+                className={`w-full mt-6 border rounded-lg px-4 py-3 text-center text-base font-medium ${
+                  showSuccess
+                    ? 'bg-green-50 text-green-800 border-green-200'
+                    : 'bg-red-50 text-red-800 border-red-200'
+                }`}
+                role="alert"
+              >
+                {statusMessage}
+              </div>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center animate-fade-in">
@@ -211,18 +256,6 @@ END:VCARD`;
                 <span>Start Over</span>
               </button>
             </div>
-          </div>
-        )}
-        {(showSuccess || showError) && (
-          <div
-            className={`w-full mt-6 border rounded-lg px-4 py-3 text-center text-base font-medium ${
-              showSuccess
-                ? 'bg-green-50 text-green-800 border-green-200'
-                : 'bg-red-50 text-red-800 border-red-200'
-            }`}
-            role="alert"
-          >
-            {statusMessage}
           </div>
         )}
       </div>
