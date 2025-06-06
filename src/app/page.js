@@ -44,6 +44,9 @@ export default function Page() {
           consentTimestamp: new Date().toISOString()
         }),
       });
+      
+      const data = await res.json();
+      
       if (res.ok) {
         setConsentTimestamp(new Date().toISOString());
         setStatusMessage('✅ Check your messenger app for my contact!');
